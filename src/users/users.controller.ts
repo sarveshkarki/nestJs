@@ -60,10 +60,7 @@ export class UsersController {
 
   @Post()
   public createUsers(@Body() creteUserDto: CreateUserDto) {
-    console.log('creteUserDto', typeof creteUserDto);
-    console.log('creteUserDto', creteUserDto instanceof CreateUserDto);
-
-    return 'Create user';
+    return this.usersService.createUser(creteUserDto);
   }
 
   @Patch()
