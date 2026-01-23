@@ -63,15 +63,7 @@ export class Post {
   })
   publishedOn?: Date;
 
-  @Column({
-    nullable: true,
-    type: 'varchar',
-  })
   tags?: string[];
 
-  @Column({
-    nullable: true,
-    type: 'varchar',
-  })
   metaOptions?: string;
 }
