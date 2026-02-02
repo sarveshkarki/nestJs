@@ -1,6 +1,15 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { PostType } from './enums/postType.enum';
 import { PostStatus } from './enums/postStatus.enum';
+import { MetaOption } from 'src/meta-options/meta-option.entity';
+import { User } from 'src/users/user.entity';
 
 @Entity()
 export class Post {
@@ -65,5 +74,14 @@ export class Post {
 
   tags?: string[];
 
-  metaOptions?: string;
+  // Create unidirectional one-to-one relationship with MetaOption
+  @OneToOne(() => MetaOption, (metaOptions) => metaOptions.post, {
+    cascade: true,
+    eager: true,
+  }) // Specify the target entity
+  // Indicates that this side owns the relationship and creates the foreign key in the Post table
+  metaOptions?: MetaOption;
+
+  @ManyToOne(() => User, (user) => user.posts)
+  author: User | null;
 }

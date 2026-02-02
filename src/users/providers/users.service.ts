@@ -53,11 +53,7 @@ export class UsersService {
   }
 
   //   find one by id
-  public findOneById(id: string) {
-    return {
-      id: 1,
-      name: 'John Doe',
-      email: 'john.doe@example.com',
-    };
+  public async findOneById(id: number) {
+    return await this.usersRepository.findOneBy({ id });
   }
 }

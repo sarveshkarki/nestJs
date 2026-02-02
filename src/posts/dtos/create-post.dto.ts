@@ -2,6 +2,7 @@ import {
   IsArray,
   IsDate,
   IsEnum,
+  IsInt,
   IsISO8601,
   IsJSON,
   IsNotEmpty,
@@ -18,7 +19,7 @@ import { CreatePostMetaOptionsDto } from '../../meta-options/dtos/create-post-me
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
-export class CreatePostsDto {
+export class CreatePostDto {
   @IsNotEmpty()
   @IsString()
   @MinLength(3)
@@ -86,7 +87,7 @@ export class CreatePostsDto {
     description: 'Publication date of the post in ISO 8601 format',
     example: '2024-12-31T23:59:59Z',
   })
-  publishedOn?: Date;
+  publishOn?: Date;
 
   @IsOptional()
   @IsArray()
@@ -98,21 +99,32 @@ export class CreatePostsDto {
   })
   tags?: string[];
 
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => CreatePostMetaOptionsDto)
   @ApiPropertyOptional({
-    description: 'Meta options for the post',
     type: 'array',
     required: false,
     items: {
       type: 'object',
       properties: {
-        key: { type: 'string', example: 'readingTime' },
-        value: { type: 'string', example: '5 mins' },
+        metaValue: {
+          type: 'json',
+          description: 'The metaValue is a JSON string',
+          example: '{"sidebarEnabled": true,}',
+        },
       },
     },
   })
-  metaOptions: [CreatePostMetaOptionsDto[]];
+  @IsOptional()
+  @ValidateNested({ each: true })
+  @Type(() => CreatePostMetaOptionsDto)
+  metaOptions?: CreatePostMetaOptionsDto;
+
+  @ApiProperty({
+    type: 'integer',
+    required: true,
+    description: 'Tags associated with the post',
+    example: 1,
+  })
+  @IsInt()
+  @IsNotEmpty()
+  authorId: number;
 }
