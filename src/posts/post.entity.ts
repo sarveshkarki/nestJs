@@ -2,6 +2,8 @@ import {
   Column,
   Entity,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -10,6 +12,7 @@ import { PostType } from './enums/postType.enum';
 import { PostStatus } from './enums/postStatus.enum';
 import { MetaOption } from 'src/meta-options/meta-option.entity';
 import { User } from 'src/users/user.entity';
+import { Tag } from 'src/tags/tag.entity';
 
 @Entity()
 export class Post {
@@ -64,15 +67,17 @@ export class Post {
     type: 'varchar',
     length: 1024,
   })
-  featuredImage?: string;
+  featuredImageUrl?: string;
 
   @Column({
     nullable: true,
     type: 'timestamp',
   })
-  publishedOn?: Date;
+  publishOn?: Date;
 
-  tags?: string[];
+  @ManyToMany(() => Tag, { eager: true })
+  @JoinTable()
+  tags?: Tag[];
 
   // Create unidirectional one-to-one relationship with MetaOption
   @OneToOne(() => MetaOption, (metaOptions) => metaOptions.post, {
@@ -82,6 +87,6 @@ export class Post {
   // Indicates that this side owns the relationship and creates the foreign key in the Post table
   metaOptions?: MetaOption;
 
-  @ManyToOne(() => User, (user) => user.posts)
+  @ManyToOne(() => User, (user) => user.posts, { eager: true })
   author: User | null;
 }

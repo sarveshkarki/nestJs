@@ -38,7 +38,7 @@ export class PostController {
   @ApiResponse({ status: 200, description: 'The post has been updated.' })
   @Patch()
   public updatePost(@Body() patchPostDto: PatchPostDto) {
-    console.log(patchPostDto);
+    return this.postService.update(patchPostDto);
   }
 
   @ApiOperation({ summary: 'Delete post' })

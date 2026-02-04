@@ -91,13 +91,12 @@ export class CreatePostDto {
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  @MinLength(3, { each: true })
+  @IsInt({ each: true })
   @ApiPropertyOptional({
-    description: 'Tags associated with the post',
-    example: ['nestjs', 'programming', 'tutorial'],
+    description: 'Arrays of ids of tags',
+    example: [1, 2, 3],
   })
-  tags?: string[];
+  tags?: number[];
 
   @ApiPropertyOptional({
     type: 'array',
