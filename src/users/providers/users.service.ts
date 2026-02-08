@@ -1,10 +1,13 @@
-import { forwardRef, Inject, Injectable } from '@nestjs/common';
-import { GetUsersParamDto } from '../dtos/get-users-param.dto';
-import { AuthService } from 'src/auth/providers/auth.service';
-import { Repository } from 'typeorm';
-import { User } from '../user.entity';
+import {
+  BadRequestException,
+  Injectable,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateUserDto } from '../dtos/create-user.dto';
+import { GetUsersParamDto } from '../dtos/get-users-param.dto';
+import { User } from '../user.entity';
 
 @Injectable()
 export class UsersService {
@@ -17,18 +20,37 @@ export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    //  INJECTING CONFIG SERVICE
   ) {}
 
   public async createUser(createUserDto: CreateUserDto) {
     // Check if user already exists with the same email
-    const existingUser = await this.usersRepository.findOne({
-      where: { email: createUserDto.email },
-    });
+    try {
+      const existingUser = await this.usersRepository.findOne({
+        where: { email: createUserDto.email },
+      });
+
+      if (existingUser) {
+        throw new BadRequestException(
+          'User already exists, please check your email.',
+        );
+      }
+    } catch (error) {
+      console.error('DB ERROR:', error);
+      throw new RequestTimeoutException(
+        'Unable to process your request at the moment please try later.',
+        { description: 'Error connecting to the database.' },
+      );
+    }
+
     // Handle exception if user exists
+
     // Create a new user entity
     let newUser = this.usersRepository.create(createUserDto);
+
     // Save the new user to the database
     newUser = await this.usersRepository.save(newUser);
+
     return newUser;
   }
 
