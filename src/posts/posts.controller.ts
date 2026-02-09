@@ -22,9 +22,14 @@ export class PostController {
     private readonly postService: PostService,
   ) {}
 
-  @Get('{/:userId}')
-  public getPosts(@Param('userId') userId: number) {
-    return this.postService.findAll(userId);
+  // @Get('{/:userId}')
+  // public getPosts(@Param('userId') userId: number) {
+  //   return this.postService.findAll(userId);
+  // }
+
+  @Get(':id')
+  findOne(@Param('id') id: number) {
+    return this.postService.findOne(id);
   }
 
   @ApiOperation({ summary: 'Create a new post' })

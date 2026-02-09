@@ -24,58 +24,69 @@ export class UsersService {
   ) {}
 
   public async createUser(createUserDto: CreateUserDto) {
-    // Check if user already exists with the same email
+    // Check if user exists
+    let existingUser;
+
     try {
-      const existingUser = await this.usersRepository.findOne({
+      existingUser = await this.usersRepository.findOne({
         where: { email: createUserDto.email },
       });
-
-      if (existingUser) {
-        throw new BadRequestException(
-          'User already exists, please check your email.',
-        );
-      }
     } catch (error) {
       console.error('DB ERROR:', error);
       throw new RequestTimeoutException(
         'Unable to process your request at the moment please try later.',
-        { description: 'Error connecting to the database.' },
       );
     }
-
-    // Handle exception if user exists
-
-    // Create a new user entity
+    // Throw an error if user already exits
+    if (existingUser) {
+      throw new BadRequestException(
+        'User already exists, please check your email.',
+      );
+    }
+    // Create new instance of user if user does not already exits
     let newUser = this.usersRepository.create(createUserDto);
-
-    // Save the new user to the database
-    newUser = await this.usersRepository.save(newUser);
-
+    try {
+      newUser = await this.usersRepository.save(newUser);
+    } catch (error) {
+      throw new RequestTimeoutException(
+        'Unable to process your request at the moment.',
+        {
+          description: 'Error connecting to the database.',
+        },
+      );
+    }
+    // Save user to the database
     return newUser;
   }
 
-  public findAll(
+  public async findAll(
     getUsersParamDto: GetUsersParamDto,
     limit: number,
     page: number,
   ) {
+    let users = await this.usersRepository.find();
+    return users;
     // Auth service
     // const isAuth = this.authService.isAuth();
     // console.log('isAuth', isAuth);
-    return [
-      {
-        name: 'John Doe',
-        email: 'john.doe@example.com',
-      },
-      {
-        name: 'Jane Smith',
-        email: 'jane.smith@example.com',
-      },
-    ];
   }
 
   //   find one by id
   public async findOneById(id: number) {
-    return await this.usersRepository.findOneBy({ id });
+    let user;
+    try {
+      user = await this.usersRepository.findOneBy({ id });
+    } catch (error) {
+      throw new RequestTimeoutException(
+        'Unable to process your request at the moment.',
+        {
+          description: 'Error connecting to the database.',
+        },
+      );
+    }
+    if (!user) {
+      throw new BadRequestException('The user does not exist.');
+    }
+    return user;
   }
 }

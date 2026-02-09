@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  RequestTimeoutException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { MetaOption } from 'src/meta-options/meta-option.entity';
 import { UsersService } from 'src/users/providers/users.service';
@@ -55,30 +60,75 @@ export class PostService {
     return post;
   }
 
+  public async findOne(id: number) {
+    let post = await this.postsRepository.findOneBy({ id });
+    return post;
+  }
+
   public async update(patchPostDto: PatchPostDto) {
-    // Find the tags
-    let tags = await this.tagsService.findMultipleTags(patchPostDto.tags ?? []);
+    let post;
+
     // Find the post
-    let post = await this.postsRepository.findOneBy({ id: patchPostDto.id });
+    try {
+      post = await this.postsRepository.findOneBy({ id: patchPostDto.id });
+    } catch (error) {
+      throw new RequestTimeoutException(
+        'Unable to process your request at the moment. Please try later.',
+      );
+    }
 
     if (!post) {
       throw new NotFoundException(`Post with id ${patchPostDto.id} not found`);
     }
 
-    // Update the properties
-    post.title = patchPostDto.title ?? post.title;
-    post.content = patchPostDto.content ?? post?.content;
-    post.status = patchPostDto.status ?? post?.status;
-    post.postType = patchPostDto.postType ?? post?.postType;
-    post.slug = patchPostDto.slug ?? post?.slug;
-    post.featuredImageUrl =
-      patchPostDto.featuredImageUrl ?? post?.featuredImageUrl;
-    post.publishOn = patchPostDto.publishOn ?? post?.publishOn;
+    // Handle tags ONLY if provided
+    if (patchPostDto.tags) {
+      let tags;
 
-    // Assign the new tags
-    post.tags = tags;
-    // Save the post and return
-    return await this.postsRepository.save(post);
+      try {
+        tags = await this.tagsService.findMultipleTags(patchPostDto.tags);
+
+        console.log(
+          'FOUND TAGS:',
+          tags.map((t) => t.id),
+        );
+        console.log('FOUND TAGS LENGTH:', tags.length);
+        console.log('REQUESTED TAGS LENGTH:', patchPostDto.tags.length);
+      } catch (error) {
+        throw new RequestTimeoutException(
+          'Unable to process your request at the moment. Please try later.',
+        );
+      }
+      console.log('PATCH DTO TAGS:', patchPostDto.tags);
+      if (tags.length !== patchPostDto.tags.length) {
+        throw new BadRequestException(
+          'Please check your tag ids and ensure they are correct.',
+        );
+      }
+
+      post.tags = tags;
+    }
+
+    // Update other fields
+    post.title = patchPostDto.title ?? post.title;
+    post.content = patchPostDto.content ?? post.content;
+    post.status = patchPostDto.status ?? post.status;
+    post.postType = patchPostDto.postType ?? post.postType;
+    post.slug = patchPostDto.slug ?? post.slug;
+    post.featuredImageUrl =
+      patchPostDto.featuredImageUrl ?? post.featuredImageUrl;
+    post.publishOn = patchPostDto.publishOn ?? post.publishOn;
+
+    // Save
+    try {
+      await this.postsRepository.save(post);
+    } catch (error) {
+      throw new RequestTimeoutException(
+        'Unable to process your request at the moment. Please try later.',
+      );
+    }
+
+    return post;
   }
 
   public async delete(id: number) {
