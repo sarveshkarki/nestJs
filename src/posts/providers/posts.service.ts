@@ -12,6 +12,7 @@ import { CreatePostDto } from '../dtos/create-post.dto';
 import { Post } from '../post.entity';
 import { TagsService } from 'src/tags/providers/tags.service';
 import { PatchPostDto } from '../dtos/patch-post.dto';
+import { GetPostsDto } from '../dtos/get-posts.dto';
 
 @Injectable()
 export class PostService {
@@ -51,11 +52,10 @@ export class PostService {
     return await this.postsRepository.save(post);
   }
 
-  public async findAll(userId: number) {
+  public async findAll(postQuery: GetPostsDto, userId: number) {
     let post = await this.postsRepository.find({
-      relations: {
-        // tags: true,
-      },
+      skip: (postQuery.page - 1) * postQuery.limit,
+      take: postQuery.limit,
     });
     return post;
   }
