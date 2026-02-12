@@ -28,7 +28,7 @@ export class PostController {
     @Param('userId') userId: number,
     @Query() postQuery: GetPostsDto,
   ) {
-    return this.postService.findAll(postQuery, userId);
+    return this.postService.findAll(postQuery);
   }
 
   @ApiOperation({ summary: 'Create a new post' })

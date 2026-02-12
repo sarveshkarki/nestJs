@@ -8,6 +8,7 @@ import { PostModule } from './posts/posts.module';
 import { TagsService } from './tags/providers/tags.service';
 import { TagsModule } from './tags/tags.module';
 import { UsersModule } from './users/users.module';
+import { PaginationModule } from './common/pagination/pagination.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { UsersModule } from './users/users.module';
     }),
     TagsModule,
     MetaOptionsModule,
+    PaginationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
