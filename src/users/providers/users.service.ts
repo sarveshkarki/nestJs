@@ -10,6 +10,7 @@ import { GetUsersParamDto } from '../dtos/get-users-param.dto';
 import { User } from '../user.entity';
 import { UsersCreateManyProvider } from './users-create-many.provider';
 import { CreateManyUsersDto } from '../dtos/create-many-users.dto';
+import { CreateUserProvider } from './create-user.provider';
 
 @Injectable()
 export class UsersService {
@@ -25,43 +26,14 @@ export class UsersService {
 
     // Inject usersCreateMany many provider
     private readonly usersCreateManyProvider: UsersCreateManyProvider,
+
+    // Inject createUserProvider
+    private readonly createUserProvider: CreateUserProvider,
   ) {}
 
   // Create the user
   public async createUser(createUserDto: CreateUserDto) {
-    // Check if user exists
-    let existingUser;
-
-    try {
-      existingUser = await this.usersRepository.findOne({
-        where: { email: createUserDto.email },
-      });
-    } catch (error) {
-      console.error('DB ERROR:', error);
-      throw new RequestTimeoutException(
-        'Unable to process your request at the moment please try later.',
-      );
-    }
-    // Throw an error if user already exits
-    if (existingUser) {
-      throw new BadRequestException(
-        'User already exists, please check your email.',
-      );
-    }
-    // Create new instance of user if user does not already exits
-    let newUser = this.usersRepository.create(createUserDto);
-    try {
-      newUser = await this.usersRepository.save(newUser);
-    } catch (error) {
-      throw new RequestTimeoutException(
-        'Unable to process your request at the moment.',
-        {
-          description: 'Error connecting to the database.',
-        },
-      );
-    }
-    // Save user to the database
-    return newUser;
+    return this.createUserProvider.createUser(createUserDto);
   }
 
   // Find all the users
