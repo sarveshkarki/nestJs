@@ -11,6 +11,8 @@ import { User } from '../user.entity';
 import { UsersCreateManyProvider } from './users-create-many.provider';
 import { CreateManyUsersDto } from '../dtos/create-many-users.dto';
 import { CreateUserProvider } from './create-user.provider';
+import { FindOneUserByEmailProvider } from './find-one-user-by-email.provider';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UsersService {
@@ -21,6 +23,10 @@ export class UsersService {
   // ) {}
 
   constructor(
+    // Injecting config service
+    private readonly configService: ConfigService,
+
+    // Inject user repository
     @InjectRepository(User)
     private usersRepository: Repository<User>,
 
@@ -29,6 +35,9 @@ export class UsersService {
 
     // Inject createUserProvider
     private readonly createUserProvider: CreateUserProvider,
+
+    // Inject findOneUserByEmailProvider
+    private readonly findOneUserByEmailProvider: FindOneUserByEmailProvider,
   ) {}
 
   // Create the user
@@ -71,5 +80,9 @@ export class UsersService {
   // Create many users
   public async createMany(createManyUsersDto: CreateManyUsersDto) {
     return await this.usersCreateManyProvider.createMany(createManyUsersDto);
+  }
+
+  public async findOneByEmail(email: string) {
+    return await this.findOneUserByEmailProvider.findOneByEmail(email);
   }
 }
